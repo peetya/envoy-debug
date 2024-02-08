@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:v2.5
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - default
+
+  envoy:
+    image: envoyproxy/envoy:v1.18.3
+    volumes:
+      - "./envoy.yaml:/etc/envoy/envoy.yaml"
+    labels:
+      - "traefik.http.routers.envoy.rule=Host(`nginx1.localhost`) || Host(`nginx2.localhost`)"
+      - "traefik.http.services.envoy.loadbalancer.server.port=10000"
+    networks:
+      - default
+
+  nginx1:
+    image: nginx:latest
+    volumes:
+      - "./html1:/usr/share/nginx/html"
+    expose:
+      - "80"
+    networks:
+      default:
+        aliases:
+          - nginx1.localhost
+
+  nginx2:
+    image: nginx:latest
+    volumes:
+      - "./html2:/usr/share/nginx/html"
+    expose:
+      - "80"
+    networks:
+      default:
+        aliases:
+          - nginx2.localhost

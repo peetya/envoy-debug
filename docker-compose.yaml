@@ -6,6 +6,7 @@ services:
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
     ports:
       - "80:80"
@@ -20,10 +21,14 @@ services:
     volumes:
       - "./envoy.yaml:/etc/envoy/envoy.yaml"
     labels:
-      - "traefik.http.routers.envoy.rule=Host(`nginx1.localhost`) || Host(`nginx2.localhost`)"
-      - "traefik.http.services.envoy.loadbalancer.server.port=10000"
+      - "traefik.enable=true"
+      - "traefik.http.routers.envoy_route.rule=Host(`nginx1.foo`) || Host(`nginx2.foo`)"
+      - "traefik.http.routers.envoy_route.service=envoy_service"
+      - "traefik.http.services.envoy_service.loadbalancer.server.port=10000"
     networks:
-      - default
+      default:
+        aliases:
+          - nginx2.foo
 
   nginx1:
     image: nginx:latest
@@ -34,7 +39,7 @@ services:
     networks:
       default:
         aliases:
-          - nginx1.localhost
+          - nginx1.foo
 
   nginx2:
     image: nginx:latest
@@ -43,6 +48,4 @@ services:
     expose:
       - "80"
     networks:
-      default:
-        aliases:
-          - nginx2.localhost
+      - default

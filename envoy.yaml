@@ -19,12 +19,12 @@ static_resources:
                   name: local_route
                   virtual_hosts:
                     - name: nginx1
-                      domains: ["nginx1.localhost"]
+                      domains: ["nginx1.foo"]
                       routes:
                         - match: { prefix: "/" }
                           route: { cluster: nginx1 }
                     - name: nginx2
-                      domains: ["nginx2.localhost"]
+                      domains: ["nginx2.foo"]
                       routes:
                         - match: { prefix: "/" }
                           route: { cluster: nginx2 }
